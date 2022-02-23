@@ -15,11 +15,21 @@
  */
 package com.akka.tools.bus;
 
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 封装了用户事件.
+ * @param <T>
+ */
 public class Event<T> {
+    /**
+     * 用户事件.
+     */
     T t;
+    /**
+     * Station 列表.
+     * 会调用传递的列表.
+     */
     List<Station<T>> station;
 
     public Event(List<Station<T>> station) {

@@ -22,6 +22,12 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 单线程EventBus.
+ * 线程安全.
+ * @param <T>
+ */
+
 public class SingleEventBus<T> implements Bus<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleEventBus.class);
@@ -30,44 +36,43 @@ public class SingleEventBus<T> implements Bus<T> {
     private static final AtomicInteger numberPlate = new AtomicInteger(0);
 
     /**
-     * 公交成名
+     * 公交成名.
      */
     private final String busName;
 
     /**
-     * 负责运送事件
+     * 负责运送事件.
      */
     private final Thread bus;
 
     /**
-     * 事件目的地
+     * 事件目的地.
      */
     private final List<Station<T>> stations;
 
     /**
-     * 事件
+     * 事件.
      */
     private final BlockingQueue<Event<T>> events;
 
     /**
-     * 发车标记
+     * 发车标记.
      */
     private volatile boolean isRun;
 
     /**
-     * 优雅关闭
+     * 优雅关闭.
      */
     private final boolean gracefulClose;
 
     /**
-     * 等待下车的Event
+     * 等待下车的Event.
      */
     private final ThreadPoolExecutor reachGoal;
 
     public SingleEventBus() {
         this(String.format("Default-SingleEventBus %d", numberPlate.getAndIncrement()), false);
     }
-
 
     public SingleEventBus(String name) {
         this(name, false);
@@ -77,7 +82,6 @@ public class SingleEventBus<T> implements Bus<T> {
         this(String.format("SingleEventBus %d", numberPlate.getAndIncrement()), gracefulClose);
     }
 
-
     public SingleEventBus(String name, boolean gracefulClose) {
         this.busName = name;
         this.bus = new Thread(new Driver(), this.busName);
@@ -85,7 +89,7 @@ public class SingleEventBus<T> implements Bus<T> {
         this.stations = new CopyOnWriteArrayList<>();
         this.gracefulClose = gracefulClose;
         this.reachGoal = new ThreadPoolExecutor(1, 1, 0,
-                TimeUnit.MILLISECONDS,new LinkedBlockingDeque<>());
+                TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>());
     }
 
     @Override
@@ -103,7 +107,6 @@ public class SingleEventBus<T> implements Bus<T> {
         }
     }
 
-
     @Override
     public void addEvent(Event<T> event) {
         if (!isRun) {
@@ -116,7 +119,6 @@ public class SingleEventBus<T> implements Bus<T> {
     public void addStation(Station<T> station) {
         stations.add(station);
     }
-
 
     class Driver implements Runnable {
 
@@ -138,8 +140,6 @@ public class SingleEventBus<T> implements Bus<T> {
                         reachGoal.shutdown();
                         break;
                     }
-
-
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

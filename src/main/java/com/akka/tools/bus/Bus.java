@@ -17,6 +17,10 @@ package com.akka.tools.bus;
 
 import com.akka.tools.api.LifeCycle;
 
+/**
+ * Bus 接口.
+ * @param <T>
+ */
 public interface Bus<T> extends LifeCycle {
 
     void addEvent(Event<T> event);
