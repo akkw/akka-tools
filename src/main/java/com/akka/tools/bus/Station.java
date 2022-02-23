@@ -15,14 +15,8 @@
  */
 package com.akka.tools.bus;
 
-/**
- * 一个回调接口.
- * @param <T> 类型.
- */
 public interface Station<T> {
-   /**
-    *
-    * @param event 用户事件包含在其中.
-    */
+
    void debarkation(Event<T> event);
+
 }

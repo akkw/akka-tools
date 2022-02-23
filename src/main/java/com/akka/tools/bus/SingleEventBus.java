@@ -22,12 +22,6 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * 单线程EventBus.
- * 线程安全.
- * @param <T>
- */
-
 public class SingleEventBus<T> implements Bus<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleEventBus.class);

@@ -15,17 +15,9 @@
  */
 package com.akka.tools.api;
 
-/**
- * 生命周期接口.
- */
 public interface LifeCycle {
-    /**
-     * 启动.
-     */
+
     void start();
 
-    /**
-     * 暂停.
-     */
     void stop();
 }

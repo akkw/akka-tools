@@ -59,18 +59,6 @@ This file is based on the checkstyle file of Apache Beam.
         <property name="severity" value="error"/>
     </module>
 
-    <!-- Prevent *Tests.java as tools may not pick them up -->
-    <!--<module name="RegexpOnFilename">-->
-    <!--<property name="fileNamePattern" value=".*Tests\.java$" />-->
-    <!--</module>-->
-
-<!--    <module name="SuppressionFilter">-->
-<!--        <property name="file" value="${checkstyle.suppressions.file}" default="suppressions.xml" />-->
-<!--    </module>-->
-
-    <!-- Check that every module has a package-info.java -->
-    <!--<module name="JavadocPackage"/>-->
-
 
     <module name="FileLength">
         <property name="max" value="3000"/>
@@ -83,21 +71,6 @@ This file is based on the checkstyle file of Apache Beam.
     </module>
     <!-- All Java AST specific tests live under TreeWalker module. -->
     <module name="TreeWalker">
-
-        <!--<!– Allow use of comment to suppress javadocstyle –>-->
-        <!--<module name="SuppressionCommentFilter">-->
-        <!--<property name="offCommentFormat" value="CHECKSTYLE.OFF\: ([\w\|]+)"/>-->
-        <!--<property name="onCommentFormat" value="CHECKSTYLE.ON\: ([\w\|]+)"/>-->
-        <!--<property name="checkFormat" value="$1"/>-->
-        <!--</module>-->
-
-
-        <!--<module name="RegexpSinglelineJava">-->
-        <!--<property name="format" value="^\ts* +\t*\S" />-->
-        <!--<property name="message"-->
-        <!--value="Line has leading space characters; indentation should be performed with tabs only." />-->
-        <!--<property name="ignoreComments" value="true" />-->
-        <!--</module>-->
 
         <!-- Prohibit T.getT() methods for standard boxed types -->
         <module name="Regexp">
@@ -231,55 +204,8 @@ This file is based on the checkstyle file of Apache Beam.
                      value="Unused import: {0}."/>
         </module>
 
-        <!--
-
-        JAVADOC CHECKS
-
-        -->
-
-        <!-- Checks for Javadoc comments.                     -->
-        <!-- See http://checkstyle.sf.net/config_javadoc.html -->
-        <module name="JavadocMethod">
-            <property name="scope" value="protected"/>
-            <property name="severity" value="error"/>
-            <property name="allowMissingJavadoc" value="true"/>
-            <property name="allowMissingParamTags" value="true"/>
-            <property name="allowMissingReturnTag" value="true"/>
-            <property name="allowMissingThrowsTags" value="true"/>
-            <property name="allowThrowsTagsForSubclasses" value="true"/>
-            <property name="allowUndeclaredRTE" value="true"/>
-            <!-- This check sometimes failed for with "Unable to get class information for @throws tag" for custom exceptions -->
-            <property name="suppressLoadErrors" value="true"/>
-        </module>
-
-        <!-- Check that paragraph tags are used correctly in Javadoc. -->
-        <module name="JavadocParagraph"/>
-
-        <module name="JavadocType">
-            <property name="scope" value="protected"/>
-            <property name="severity" value="error"/>
-            <property name="allowMissingParamTags" value="true"/>
-        </module>
-
-        <module name="JavadocStyle">
-            <property name="severity" value="error"/>
-            <property name="checkHtml" value="true"/>
-        </module>
-
-        <!--
-
-        NAMING CHECKS
-
-        -->
-
-        <!-- Item 38 - Adhere to generally accepted naming conventions -->
 
         <module name="PackageName">
-            <!-- Validates identifiers for package names against the
-              supplied expression. -->
-            <!-- Here the default checkstyle rule restricts package name parts to
-              seven characters, this is not in line with common practice at Google.
-            -->
             <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]{1,})*$"/>
             <property name="severity" value="error"/>
         </module>
@@ -353,70 +279,14 @@ This file is based on the checkstyle file of Apache Beam.
             <property name="severity" value="error"/>
         </module>
 
-        <!-- Type parameters must be either one of the four blessed letters
-        T, K, V, W, X or else be capital-case terminated with a T,
-        such as MyGenericParameterT -->
-        <!--<module name="ClassTypeParameterName">-->
-        <!--<property name="format" value="^(((T|K|V|W|X)[0-9]*)|([A-Z][a-z][a-zA-Z]*T))$"/>-->
-        <!--<property name="severity" value="error"/>-->
-        <!--</module>-->
 
-        <!--<module name="MethodTypeParameterName">-->
-        <!--<property name="format" value="^(((T|K|V|W|X)[0-9]*)|([A-Z][a-z][a-zA-Z]*T))$"/>-->
-        <!--<property name="severity" value="error"/>-->
-        <!--</module>-->
-
-        <!--<module name="InterfaceTypeParameterName">-->
-        <!--<property name="format" value="^(((T|K|V|W|X)[0-9]*)|([A-Z][a-z][a-zA-Z]*T))$"/>-->
-        <!--<property name="severity" value="error"/>-->
-        <!--</module>-->
-
-        <!--
-
-        LENGTH and CODING CHECKS
-
-        -->
-
-        <!--<module name="LineLength">-->
-        <!--<!– Checks if a line is too long. –>-->
-        <!--<property name="max" value="100"/>-->
-        <!--<property name="severity" value="error"/>-->
-
-        <!--<!–-->
-        <!--The default ignore pattern exempts the following elements:-->
-        <!-- - import statements-->
-        <!-- - long URLs inside comments-->
-        <!--–>-->
-
-        <!--<property name="ignorePattern"-->
-        <!--value="^(package .*;\s*)|(import .*;\s*)|( *\* .*https?://.*)$"/>-->
-        <!--</module>-->
 
         <module name="LeftCurly">
             <!-- Checks for placement of the left curly brace ('{'). -->
             <property name="severity" value="error"/>
         </module>
 
-        <!--<module name="RightCurly">-->
-        <!--<!– Checks right curlies on CATCH, ELSE, and TRY blocks are on-->
-        <!--the same line. e.g., the following example is fine:-->
-        <!--<pre>-->
-        <!--if {-->
-        <!--...-->
-        <!--} else-->
-        <!--</pre>-->
-        <!--–>-->
-        <!--<!– This next example is not fine:-->
-        <!--<pre>-->
-        <!--if {-->
-        <!--...-->
-        <!--}-->
-        <!--else-->
-        <!--</pre>-->
-        <!--–>-->
-        <!--<property name="option" value="same"/>-->
-        <!--<property name="severity" value="error"/>-->
-        <!--</module>-->
+
 
         <!-- Checks for braces around if and else blocks -->
         <module name="NeedBraces">
@@ -529,16 +399,6 @@ This file is based on the checkstyle file of Apache Beam.
             <property name="severity" value="error"/>
         </module>
 
-        <!--<module name="OperatorWrap">-->
-        <!--<!– Checks that operators like + and ? appear at newlines rather than-->
-        <!--at the end of the previous line.-->
-        <!--–>-->
-        <!--<property name="option" value="NL"/>-->
-        <!--<property name="tokens" value="BAND, BOR, BSR, BXOR, DIV, EQUAL,-->
-        <!--GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD,-->
-        <!--NOT_EQUAL, PLUS, QUESTION, SL, SR, STAR "/>-->
-        <!--</module>-->
-
         <module name="OperatorWrap">
             <!-- Checks that assignment operators are at the end of the line. -->
             <property name="option" value="eol"/>
@@ -553,6 +413,5 @@ This file is based on the checkstyle file of Apache Beam.
         </module>
 
     </module>
-
 
 </module>

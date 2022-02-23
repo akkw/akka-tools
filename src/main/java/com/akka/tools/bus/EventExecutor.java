@@ -17,10 +17,6 @@ package com.akka.tools.bus;
 
 import java.util.List;
 
-/**
- * 事件执行类.
- * @param <T>
- */
 public class EventExecutor<T> implements Runnable {
     private final Event<T> event;
     private final List<Station<T>> stations;
