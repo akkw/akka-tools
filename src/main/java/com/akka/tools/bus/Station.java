@@ -1,6 +1,4 @@
-package com.akka.tools.bus;/* 
-    create qiangzhiwei time 2022/2/22
- */
+package com.akka.tools.bus;
 
 public interface Station<T> {
    void debarkation(Event<T> event);

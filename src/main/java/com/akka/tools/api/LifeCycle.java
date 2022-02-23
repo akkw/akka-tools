@@ -1,6 +1,4 @@
-package com.akka.tools.api;/* 
-    create qiangzhiwei time 2022/2/22
- */
+package com.akka.tools.api;
 
 public interface LifeCycle {
 

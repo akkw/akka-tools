@@ -1,6 +1,4 @@
-package com.akka.tools.bus;/* 
-    create qiangzhiwei time 2022/2/23
- */
+package com.akka.tools.bus;
 
 import java.util.List;
 
