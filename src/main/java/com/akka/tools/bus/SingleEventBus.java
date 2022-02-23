@@ -85,11 +85,17 @@ public class SingleEventBus<T> implements Bus<T> {
     @Override
     public void stop() {
         isRun = false;
+        if (!gracefulClose) {
+            reachGoal.shutdownNow();
+        }
     }
 
 
     @Override
     public void addEvent(Event<T> event) {
+        if (!isRun) {
+            throw new RuntimeException(String.format("bus %s already shutdown", busName));
+        }
         this.events.add(event);
     }
 
@@ -112,6 +118,12 @@ public class SingleEventBus<T> implements Bus<T> {
 
                     if (event != null) {
                         reachGoal.execute(new EventExecutor<>(event, stations));
+                    }
+
+                    // 关闭
+                    if (!isRun) {
+                        reachGoal.shutdown();
+                        break;
                     }
 
 
