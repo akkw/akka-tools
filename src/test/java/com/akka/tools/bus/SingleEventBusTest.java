@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.akka.toles.bus;
+package com.akka.tools.bus;
 
 import com.akka.tools.bus.Event;
 import com.akka.tools.bus.SingleEventBus;

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<akkaHttp>
+    <contexts>
+        <context uri="/akka/http/test" handel="com.akka.tools.http.server.TestAkkaHandler">
+            <method>post</method>
+        </context>
+    </contexts>
+</akkaHttp>
