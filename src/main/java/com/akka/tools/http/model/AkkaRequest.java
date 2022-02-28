@@ -4,20 +4,18 @@ import com.sun.net.httpserver.Headers;
 
 import java.net.URI;
 
-public class Request {
+public class AkkaRequest {
     private Headers headers;
     private URI uri;
-    private String method;
-    private String body;
+    private Object body;
 
 
-    public Request() {
+    public AkkaRequest() {
     }
 
-    public Request(Headers headers, URI uri, String method, String body) {
+    public AkkaRequest(Headers headers, URI uri, Object body) {
         this.headers = headers;
         this.uri = uri;
-        this.method = method;
         this.body = body;
     }
 
@@ -37,15 +35,7 @@ public class Request {
         this.uri = uri;
     }
 
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public String getBody() {
+    public Object getBody() {
         return body;
     }
 

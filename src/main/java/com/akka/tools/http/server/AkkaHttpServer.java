@@ -1,6 +1,7 @@
 package com.akka.tools.http.server;
 
 import com.akka.tools.api.LifeCycle;
+import com.akka.tools.http.model.AkkaHttpType;
 import com.sun.net.httpserver.HttpServer;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -16,6 +17,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 
 public class AkkaHttpServer implements LifeCycle {
@@ -67,18 +69,14 @@ public class AkkaHttpServer implements LifeCycle {
             return this;
         }
 
-        public AkkaHttpServer build() throws IOException, DocumentException,
-                ClassNotFoundException, InstantiationException,
-                IllegalAccessException, URISyntaxException {
+        public AkkaHttpServer build() throws IOException, DocumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, URISyntaxException {
             build0();
             this.server.setExecutor(executor);
 
             return new AkkaHttpServer(this.server);
         }
 
-        private void build0() throws IOException, DocumentException,
-                ClassNotFoundException, InstantiationException,
-                IllegalAccessException, URISyntaxException {
+        private void build0() throws IOException, DocumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, URISyntaxException {
             if (this.port < 1024) {
                 throw new IllegalArgumentException("port > 1024");
             }
@@ -91,22 +89,29 @@ public class AkkaHttpServer implements LifeCycle {
             context();
         }
 
-        private void context() throws DocumentException, ClassNotFoundException,
-                InstantiationException, IllegalAccessException, URISyntaxException {
+        private void context() throws DocumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, URISyntaxException {
             List<AkkaHttpContext> contexts = processXML();
             context0(contexts);
         }
 
-        private void context0(List<AkkaHttpContext> contexts) throws ClassNotFoundException,
-                InstantiationException, IllegalAccessException {
-
+        private void context0(List<AkkaHttpContext> contexts) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
             for (AkkaHttpContext context : contexts) {
                 Class<?> aClass = Class.forName(context.handlerPath);
                 AbstractAkkaHttpHandler o = (AbstractAkkaHttpHandler) aClass.newInstance();
-                o.method = context.method.split(",");
+                handlerHttpTypeInit(o, context.method);
                 o.init();
                 this.server.createContext(context.uri, o);
             }
+        }
+
+        private void handlerHttpTypeInit(AbstractAkkaHttpHandler o, String method) {
+            String[] split = method.split(",");
+            AkkaHttpType[] types = new AkkaHttpType[split.length];
+
+            for (int i = 0; i < split.length; i++) {
+                types[i] = AkkaHttpType.valueOf(split[i].toUpperCase(Locale.ROOT));
+            }
+            o.method = types;
         }
 
         private List<AkkaHttpContext> processXML() throws DocumentException, URISyntaxException {
@@ -141,7 +146,7 @@ public class AkkaHttpServer implements LifeCycle {
                         }
                     }
 
-                    while(ctxElemItr.hasNext()) {
+                    while (ctxElemItr.hasNext()) {
                         Element element = ctxElemItr.next();
                         String name = element.getName();
                         if (name.equals("method")) {

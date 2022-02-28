@@ -1,7 +1,7 @@
 package com.akka.tools.http.server;
 
-import com.akka.tools.http.model.Request;
-import com.akka.tools.http.model.Response;
+import com.akka.tools.http.model.AkkaRequest;
+import com.akka.tools.http.model.AkkaResponse;
 
 public class TestAkkaHandler extends AkkaHttpHandler {
     @Override
@@ -11,7 +11,7 @@ public class TestAkkaHandler extends AkkaHttpHandler {
 
 
     @Override
-    public void process(Request req, Response resp) {
+    public void process(AkkaRequest req, AkkaResponse resp) {
 
     }
 }
