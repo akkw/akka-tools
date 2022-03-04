@@ -3,6 +3,7 @@ package com.akka.tools.http.server;
 import com.akka.tools.api.LifeCycle;
 import com.akka.tools.http.model.AkkaHttpType;
 import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsServer;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -69,27 +70,24 @@ public class AkkaHttpServer implements LifeCycle {
             return this;
         }
 
-        public AkkaHttpServer build() throws IOException, DocumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, URISyntaxException {
+        public AkkaHttpServer build() throws Exception {
             build0();
             this.server.setExecutor(executor);
 
-            return new AkkaHttpServer(this.server);
+            return new AkkaHttpServer(server);
         }
 
-        private void build0() throws IOException, DocumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, URISyntaxException {
+        private void build0() throws Exception {
             if (this.port < 1024) {
                 throw new IllegalArgumentException("port > 1024");
             }
             if (this.contextPath == null || this.contextPath.equals("")) {
-                throw new IllegalArgumentException("port > 1024");
+                throw new IllegalArgumentException("");
             }
-            InetSocketAddress port = new InetSocketAddress(this.port);
-            this.server = HttpServer.create(port, this.tcpMaxConcurrent);
-
             context();
         }
 
-        private void context() throws DocumentException, ClassNotFoundException, InstantiationException, IllegalAccessException, URISyntaxException {
+        private void context() throws Exception {
             List<AkkaHttpContext> contexts = processXML();
             context0(contexts);
         }
@@ -114,7 +112,7 @@ public class AkkaHttpServer implements LifeCycle {
             o.method = types;
         }
 
-        private List<AkkaHttpContext> processXML() throws DocumentException, URISyntaxException {
+        private List<AkkaHttpContext> processXML() throws DocumentException, URISyntaxException, IOException {
 
             URL fileURL = ClassLoader.getSystemResource(this.contextPath);
             File file = new File(fileURL.toURI());
@@ -122,7 +120,41 @@ public class AkkaHttpServer implements LifeCycle {
             SAXReader reader = new SAXReader();
             Document read = reader.read(file);
             Element akkaHttp = read.getRootElement();
-            Iterator<Element> cxtsIterator = akkaHttp.elementIterator("contexts");
+
+            String httpType = processHttpType(akkaHttp.element("http-type"));
+            createHttpServer(httpType);
+
+            return processContexts(akkaHttp.elementIterator("contexts"));
+
+        }
+
+        private void createHttpServer(String type) throws IOException {
+
+            switch (type) {
+                case "HTTP":
+                    this.server = HttpServer.create(new InetSocketAddress(port), tcpMaxConcurrent);
+                    break;
+                case "HTTPS":
+                    this.server = HttpsServer.create(new InetSocketAddress(port), tcpMaxConcurrent );
+                    initSSL();
+                    break;
+                default:
+                    throw new IllegalArgumentException("");
+            }
+        }
+
+        private void initSSL() {
+//            HttpsServer server = (HttpsServer) this.server;
+//            SSLContext sslContext = new SSLContext();
+//            new HttpsConfigurator()
+//            server.setHttpsConfigurator();
+        }
+
+        private String processHttpType(Element element) {
+            return element.getText();
+        }
+
+        private List<AkkaHttpContext> processContexts(Iterator<Element> cxtsIterator) {
 
             List<AkkaHttpContext> contexts = new ArrayList<>();
             AkkaHttpContext context;
@@ -157,9 +189,9 @@ public class AkkaHttpServer implements LifeCycle {
                     }
                     contexts.add(context);
                 }
-
             }
             return contexts;
         }
+
     }
 }
