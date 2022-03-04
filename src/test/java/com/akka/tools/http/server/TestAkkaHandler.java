@@ -12,6 +12,7 @@ public class TestAkkaHandler extends AkkaHttpHandler {
 
     @Override
     public void process(AkkaRequest req, AkkaResponse resp) {
-
+        System.out.println(req.getBody());
+        resp.setBody("ok");
     }
 }
