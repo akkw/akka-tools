@@ -112,7 +112,7 @@ public class AkkaHttpServer implements LifeCycle {
             o.method = types;
         }
 
-        private List<AkkaHttpContext> processXML() throws DocumentException, URISyntaxException, IOException {
+        private List<AkkaHttpContext> processXML() throws Exception {
 
             URL fileURL = ClassLoader.getSystemResource(this.contextPath);
             File file = new File(fileURL.toURI());
@@ -128,27 +128,21 @@ public class AkkaHttpServer implements LifeCycle {
 
         }
 
-        private void createHttpServer(String type) throws IOException {
+        private void createHttpServer(String type) throws Exception {
 
             switch (type) {
                 case "HTTP":
                     this.server = HttpServer.create(new InetSocketAddress(port), tcpMaxConcurrent);
                     break;
                 case "HTTPS":
-                    this.server = HttpsServer.create(new InetSocketAddress(port), tcpMaxConcurrent );
-                    initSSL();
-                    break;
+                    throw new Exception("https not support");
+//                    this.server = HttpsServer.create(new InetSocketAddress(port), tcpMaxConcurrent );
+//                    break;
                 default:
                     throw new IllegalArgumentException("");
             }
         }
 
-        private void initSSL() {
-//            HttpsServer server = (HttpsServer) this.server;
-//            SSLContext sslContext = new SSLContext();
-//            new HttpsConfigurator()
-//            server.setHttpsConfigurator();
-        }
 
         private String processHttpType(Element element) {
             return element.getText();
