@@ -1,6 +1,5 @@
 package com.akka.tools.retry;
 
-import javafx.util.Callback;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
