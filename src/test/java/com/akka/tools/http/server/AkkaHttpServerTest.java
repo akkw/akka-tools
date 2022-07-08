@@ -1,7 +1,6 @@
 package com.akka.tools.http.server;
 
 import com.sun.net.httpserver.HttpServer;
-import junit.framework.TestCase;
 import org.dom4j.DocumentException;
 import org.junit.Test;
 

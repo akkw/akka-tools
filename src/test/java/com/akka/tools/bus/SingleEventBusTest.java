@@ -21,6 +21,7 @@ import com.akka.tools.bus.Station;
 import org.junit.Before;
 import org.junit.Test;
 
+
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
@@ -29,7 +30,6 @@ import java.util.concurrent.CountDownLatch;
  */
 public class SingleEventBusTest {
     SingleEventBus<String> bus;
-
     @Before
     public void before() {
 
