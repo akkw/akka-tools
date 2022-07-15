@@ -12,8 +12,6 @@ class AkkaLock {
     private AtomicBoolean biased;
 
 
-
-
     private AtomicInteger count;
 
 
@@ -40,8 +38,10 @@ class AkkaLock {
         // 偏向的线程引用
         private final AtomicReference<Thread> thread;
 
+        private final AtomicReference<Thread> currentThread;
         public Sync() {
             this.thread = new AtomicReference<>();
+            this.currentThread = new AtomicReference<>();
         }
 
         @Override
@@ -55,22 +55,29 @@ class AkkaLock {
 
         @Override
         protected boolean tryRelease(int arg) {
+            Thread t = Thread.currentThread();
+            if (!t.equals(currentThread.get()))
+                throw new IllegalMonitorStateException();
             return compareAndSetState(1, 0);
         }
 
         private boolean lightweightLock() {
-
+            Thread t = Thread.currentThread();
             if (compareAndSetState(0, 1)) {
+                currentThread.set(t);
                 // 只有一个线程可以进来
                 if (thread.get() == null) {
-                    thread.set(Thread.currentThread());
+                    thread.set(t);
                 } else {
-                    Thread t = Thread.currentThread();
                     // 线程引用不一样说明有其他线程抢锁, 退出偏向模式
+                    // 不需要释放锁
                     if (t.equals(this.thread.get())) {
                         int c = count.get();
                         boolean b = count.compareAndSet(c, c + 1);
+                        // 计数引用更新失败说明有竞争
+                        // 退出锁
                         if (!b) {
+                            compareAndSetState(1, 0);
                             return false;
                         }
                     } else {
@@ -81,7 +88,7 @@ class AkkaLock {
                 }
 
                 // 判断是否可以进入偏向模式
-                if (count.get() > 16) {
+                if (count.get() > 1 << 4) {
                     if (!biased.get()) {
                         biased.compareAndSet(false, true);
                     }
