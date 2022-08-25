@@ -22,47 +22,20 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SingleEventBus<T> implements Bus<T> {
+public class SingleEventBus<T> extends AbstractEventBus<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleEventBus.class);
 
 
     private static final AtomicInteger numberPlate = new AtomicInteger(0);
 
-    /**
-     * 公交成名.
-     */
-    private final String busName;
-
-    /**
-     * 负责运送事件.
-     */
-    private final Thread bus;
-
-    /**
-     * 事件目的地.
-     */
-    private final List<Station<T>> stations;
-
-    /**
-     * 事件.
-     */
-    private final BlockingQueue<Event<T>> events;
-
-    /**
-     * 发车标记.
-     */
-    private volatile boolean isRun;
-
-    /**
-     * 优雅关闭.
-     */
-    private final boolean gracefulClose;
 
     /**
      * 等待下车的Event.
      */
     private final ThreadPoolExecutor reachGoal;
+
+    private final Driver driver = new Driver();
 
     public SingleEventBus() {
         this(String.format("Default-SingleEventBus %d", numberPlate.getAndIncrement()), false);
@@ -77,20 +50,15 @@ public class SingleEventBus<T> implements Bus<T> {
     }
 
     public SingleEventBus(String name, boolean gracefulClose) {
-        this.busName = name;
-        this.bus = new Thread(new Driver(), this.busName);
-        this.events = new LinkedBlockingDeque<>();
-        this.stations = new CopyOnWriteArrayList<>();
-        this.gracefulClose = gracefulClose;
+        super(name, gracefulClose);
+        super.bus = new Thread(new Driver(), name);
         this.reachGoal = new ThreadPoolExecutor(1, 1, 0,
                 TimeUnit.MILLISECONDS, new LinkedBlockingDeque<>());
     }
 
     @Override
     public void start() {
-        bus.start();
-        isRun = true;
-        logger.info("{} start success", busName);
+        super.start();
     }
 
     @Override
