@@ -19,7 +19,7 @@ import java.util.List;
 
 public class Event<T> {
 
-    T t;
+    T load;
 
     List<Station<T>> station;
 
@@ -27,17 +27,17 @@ public class Event<T> {
         this.station = station;
     }
 
-    public Event(T t) {
-        this.t = t;
+    public Event(T load) {
+        this.load = load;
     }
 
-    public Event(T t, List<Station<T>> station) {
-        this.t = t;
+    public Event(T load, List<Station<T>> station) {
+        this.load = load;
         this.station = station;
     }
 
-    public T getT() {
-        return t;
+    public T getLoad() {
+        return load;
     }
 
     public List<Station<T>> getStation() {

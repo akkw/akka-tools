@@ -15,33 +15,32 @@
  */
 package com.akka.tools.bus;
 
-import com.akka.tools.bus.Event;
-import com.akka.tools.bus.SingleEventBus;
-import com.akka.tools.bus.Station;
 import org.junit.Before;
 import org.junit.Test;
 
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * SingleEventBus 测试用例.
  */
 public class SingleEventBusTest {
-    SingleEventBus<String> bus;
+    AsyncEventBus<String> bus;
+    volatile boolean running = false;
     @Before
     public void before() {
 
-        bus = new SingleEventBus<>();
-
-        bus.addStation(new Station1());
-        bus.addStation(new Station1());
-        bus.addStation(new Station2());
-        bus.addStation(new Station2());
+        bus = new AsyncEventBus<>();
 
         bus.start();
-
+        running = true;
+        bus.addStation(new Station1());
+        bus.addStation(new Station1());
+        bus.addStation(new Station2());
+        bus.addStation(new Station2());
     }
 
     @Test
@@ -49,17 +48,39 @@ public class SingleEventBusTest {
         ArrayList<Station<String>> stations = new ArrayList<>();
         stations.add(new Station3());
         stations.add(new Station4());
+        final int[] count = {0};
+        new Thread(()-> {
+            while (running){
+                try {
+                    if (count[0] %10 ==0) {
+                        bus.addEvent(new Event<>("test", stations));
+                    }
+                    count[0]++;
+                    bus.addEvent(new Event<>("test"));
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(10);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        TimeUnit.SECONDS.sleep(10);
+        bus.shutdown();
+        running = false;
+        System.out.println("shutdown");
+        do {
 
-        bus.addEvent(new Event<>("test", stations));
-
-        new CountDownLatch(1).await();
+        } while (bus.eventSize() != 0);
     }
 
     static class Station1 implements Station<String> {
 
         @Override
-        public void debarkation(Event<String> event) {
-            System.out.printf("Station1: %s%n", event.getT());
+        public void debarkation(Event<String> event) throws InterruptedException {
+            System.out.printf("Station1: %s%n", event.getLoad());
         }
     }
 
@@ -67,15 +88,16 @@ public class SingleEventBusTest {
 
         @Override
         public void debarkation(Event<String> event) {
-            System.out.printf("Station2: %s%n", event.getT());
+            System.out.printf("Station2: %s%n", event.getLoad());
         }
     }
 
     static class Station3 implements Station<String> {
 
         @Override
-        public void debarkation(Event<String> event) {
-            System.out.printf("Station3: %s%n", event.getT());
+        public void debarkation(Event<String> event) throws InterruptedException {
+            System.out.printf("Station3: %s%n", event.getLoad());
+            TimeUnit.MILLISECONDS.sleep(1000);
         }
     }
 
@@ -83,7 +105,7 @@ public class SingleEventBusTest {
 
         @Override
         public void debarkation(Event<String> event) {
-            System.out.printf("Station4: %s%n", event.getT());
+            System.out.printf("Station4: %s%n", event.getLoad());
         }
     }
 }
