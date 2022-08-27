@@ -1,5 +1,6 @@
 package com.akka.tools.bus;
 
+import com.akka.tools.atomic.PaddedAtomicInteger;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -8,17 +9,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.LoggerFactory;
+
+
 public class AbstractEventBus<T> implements Bus<T> {
 
 
     private static final Logger logger =  LoggerFactory.getLogger(AbstractEventBus.class);
 
-    private static final int COUNT_BITS = 30;
-    private static final int RUNNING    = -1 << COUNT_BITS;
-    private static final int SHUTDOWN   =  0 << COUNT_BITS;
-    private static final int STOP       =  1 << COUNT_BITS;
-    private static final int TIDYING    =  2 << COUNT_BITS;
-    private static final int TERMINATED =  3 << COUNT_BITS;
+    private static final int RUNNING = 0xFF0000;
+    private static final int SHUTDOWN = 0x00FF00;
+    private static final int SHUTDOWN_NOW = 0x0000FF;
+
+
+    private PaddedAtomicInteger ctl = new PaddedAtomicInteger();
+
+
     /**
      * 公交车名.
      */
@@ -44,21 +49,12 @@ public class AbstractEventBus<T> implements Bus<T> {
      */
     protected volatile boolean isRun;
 
-    /**
-     * 优雅关闭.
-     */
-    protected final boolean gracefulClose;
 
 
-    protected boolean shutdown;
-
-
-
-    public AbstractEventBus(String busName, boolean gracefulClose) {
+    public AbstractEventBus(String busName) {
         this.busName = busName;
         this.stations = new CopyOnWriteArrayList<>();
         this.events = new LinkedBlockingDeque<>();
-        this.gracefulClose = gracefulClose;
     }
 
 
@@ -72,13 +68,6 @@ public class AbstractEventBus<T> implements Bus<T> {
     }
 
     @Override
-    public void stop() {
-        if (gracefulClose) {
-
-        }
-    }
-
-    @Override
     public void addEvent(Event<T> event) {
         events.add(event);
     }
@@ -86,5 +75,15 @@ public class AbstractEventBus<T> implements Bus<T> {
     @Override
     public void addStation(Station<T> station) {
         stations.add(station);
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
+
+    @Override
+    public void shutdownNow() {
+
     }
 }

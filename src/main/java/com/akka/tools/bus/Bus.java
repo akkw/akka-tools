@@ -17,9 +17,15 @@ package com.akka.tools.bus;
 
 import com.akka.tools.api.LifeCycle;
 
-public interface Bus<T> extends LifeCycle {
+public interface Bus<T> {
 
     void addEvent(Event<T> event);
 
     void addStation(Station<T> station);
+
+    void start();
+
+    void shutdown();
+
+    void shutdownNow();
 }
