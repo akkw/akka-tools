@@ -1,5 +1,5 @@
 package com.akka.tools.http.model;
-
+@Deprecated
 public class AkkaResponse {
     private int contentLength;
     private String body;

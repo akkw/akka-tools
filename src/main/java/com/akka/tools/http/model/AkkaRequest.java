@@ -3,7 +3,7 @@ package com.akka.tools.http.model;
 import com.sun.net.httpserver.Headers;
 
 import java.net.URI;
-
+@Deprecated
 public class AkkaRequest {
     private Headers headers;
     private URI uri;

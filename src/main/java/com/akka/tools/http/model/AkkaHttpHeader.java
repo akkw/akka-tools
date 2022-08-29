@@ -1,5 +1,5 @@
 package com.akka.tools.http.model;
-
+@Deprecated
 public class AkkaHttpHeader {
     public static final String AcceptEncodingKey = "Accept-Encoding";
     public static final String ContentTypeKey = "Content-Type";
