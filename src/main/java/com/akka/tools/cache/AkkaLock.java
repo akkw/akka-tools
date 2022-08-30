@@ -9,10 +9,10 @@ class AkkaLock {
 
 
     // 是否为偏向锁
-    private AtomicBoolean biased;
+    private final AtomicBoolean biased;
 
 
-    private AtomicInteger count;
+    private final AtomicInteger count;
 
 
     private final Sync sync;
