@@ -16,7 +16,7 @@ public class GeneralObjectPool<O> extends AbstractObjectPool<O> implements Objec
     }
 
     @Override
-    public O get() {
+    public O get() throws InterruptedException {
         int laneId = computeLane();
         synchronized (lanes[laneId]) {
             return lanes[laneId].get();
@@ -24,7 +24,7 @@ public class GeneralObjectPool<O> extends AbstractObjectPool<O> implements Objec
     }
 
     @Override
-    public void put(O o) {
+    public void put(O o) throws InterruptedException {
         int laneId = computeLane();
         synchronized (lanes[laneId]) {
             lanes[laneId].put(o);

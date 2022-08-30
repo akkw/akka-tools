@@ -1,23 +1,74 @@
 package com.akka.tools.pool;
 
+import com.akka.tools.atomic.PaddedAtomicInteger;
+
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class ObjectLane<O> extends AbstractObjectPool<O> {
 
 
+    private volatile Node<O> head;
+
+
+    private volatile Node<O> tail;
+
+
+    private final ReentrantLock getLock = new ReentrantLock();
+
+
+    private final ReentrantLock putLock = new ReentrantLock();
 
 
 
     @Override
-    public O get() {
-        return null;
+    public O get() throws InterruptedException {
+        getLock.lockInterruptibly();
+        try {
+            if (head.next == tail) {
+                 return objectFactory.create();
+            }
+            return unlinkHead();
+        } finally {
+            getLock.unlock();
+        }
+    }
+
+
+    private O unlinkHead() {
+
+        Node<O> h = head;
+        Node<O> first = h.next;
+
+        h = first.next.prev;
+        h.next = first.next;
+
+        return first.o;
     }
 
     @Override
-    public void put(O o) {
+    public void put(O o) throws InterruptedException {
+        putLock.lockInterruptibly();
+        try {
 
+
+            Node<O> node = new Node<>(o);
+
+            lindTail(node);
+        } finally {
+            putLock.unlock();
+        }
     }
 
-
-
+    private void lindTail(Node<O> node) {
+        final Node<O> t = this.tail;
+        t.o = node.o;
+        t.next = node;
+        node.prev = t;
+        node.o = null;
+        tail = node;
+    }
 
 
     static class Node<O> {
@@ -31,8 +82,8 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
             this.prev = prev;
         }
 
-        public Node(Node<O> next) {
-            this.next = next;
+        public Node(O o) {
+            this.o = o;
         }
     }
 }
