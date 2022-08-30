@@ -1,5 +1,5 @@
 package com.akka.tools.http.model;
-
+@Deprecated
 public enum AkkaHttpType {
     GET,
     POST,

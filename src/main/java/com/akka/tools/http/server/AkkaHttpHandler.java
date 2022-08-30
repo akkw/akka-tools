@@ -12,6 +12,7 @@ import java.io.InputStream;
 
 import static com.akka.tools.http.model.AkkaHttpHeader.ContentTypeKey;
 
+@Deprecated
 public abstract class AkkaHttpHandler extends AbstractAkkaHttpHandler {
 
 

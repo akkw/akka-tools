@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executor;
 
+@Deprecated
 public class AkkaHttpServer implements LifeCycle {
 
     private final HttpServer server;
