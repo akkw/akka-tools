@@ -21,65 +21,73 @@ public class PoolTest {
                 return new Event<>("test");
             }
         });
-        Future<Long> submit = executor.submit(new Callable<Long>() {
-            @Override
-            public Long call() throws Exception {
-                long startTime = 0, endTime = 0;
 
-                try {
-                    startTime = System.currentTimeMillis();
-                    for (long i = 0; i < SIZE; i++) {
-                        Event<String> event = pool.borrowObject();
-                        if (event == null) {
-                            System.out.println("event is null");
-                        } else {
-                            queue.add(event);
-                        }
 
-                    }
-                    endTime = System.currentTimeMillis();
+        pool.returnObject(new Event<>("test"));
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return endTime - startTime;
-            }
-        });
-        executor.execute(() -> {
-            try {
-                for (; ; ) {
-                    pool.returnObject(queue.poll(10, TimeUnit.MILLISECONDS));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-        System.out.println(submit.get());
+        pool.borrowObject();
+
+//        Future<Long> submit = executor.submit(new Callable<Long>() {
+//            @Override
+//            public Long call() throws Exception {
+//                long startTime = 0, endTime = 0;
+//
+//                try {
+//                    startTime = System.currentTimeMillis();
+//                    for (long i = 0; i < SIZE; i++) {
+//                        Event<String> event = pool.borrowObject();
+//                        if (event == null) {
+//                            System.out.println("event is null");
+//                        } else {
+//                            queue.add(event);
+//                        }
+//
+//                    }
+//                    endTime = System.currentTimeMillis();
+//
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                return endTime - startTime;
+//            }
+//        });
+//        executor.execute(() -> {
+//            try {
+//                for (; ; ) {
+//                    pool.returnObject(queue.poll(10, TimeUnit.MILLISECONDS));
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        System.out.println(submit.get());
     }
 
 
     @Test
     public void newObjectTest() {
-        BlockingQueue<Event<String>> queue = new LinkedBlockingQueue<>();
 
-        new Thread(()-> {
-            int i = 0;
-            try {
-                for (;;) {
-                    queue.take();
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
 
-        long startTime = System.currentTimeMillis();
-        for (long i = 0; i < SIZE; i++) {
-            queue.add(new Event<>("test"));
-        }
-        long endTime = System.currentTimeMillis();
-
-        System.out.println(endTime - startTime);
+//        BlockingQueue<Event<String>> queue = new LinkedBlockingQueue<>();
+//
+//        new Thread(()-> {
+//            int i = 0;
+//            try {
+//                for (;;) {
+//                    queue.take();
+//                }
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }).start();
+//
+//        long startTime = System.currentTimeMillis();
+//        for (long i = 0; i < SIZE; i++) {
+//            queue.add(new Event<>("test"));
+//        }
+//        long endTime = System.currentTimeMillis();
+//
+//        System.out.println(endTime - startTime);
     }
 
 
