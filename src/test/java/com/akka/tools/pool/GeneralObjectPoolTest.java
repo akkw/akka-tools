@@ -9,10 +9,9 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ObjectLaneTest {
+public class GeneralObjectPoolTest {
 
     long size = (long) Math.pow(10, 9);
-
     AtomicLong j = new PaddedAtomicLong();
     volatile int objectSize = 0;
     int getThreadSize = 1 << 2;
@@ -23,21 +22,21 @@ public class ObjectLaneTest {
             TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(1));
     LinkedBlockingQueue<PoolTestObject> queue = new LinkedBlockingQueue<>();
 
-
+    ThreadLocalRandom random = ThreadLocalRandom.current();
     @Test
     public void performanceTest() throws ExecutionException, InterruptedException, TimeoutException {
-        ObjectLane<PoolTestObject> lanes = new ObjectLane<>(this::createObject);
+        GeneralObjectPool<PoolTestObject> lanes = new GeneralObjectPool<>(5, this::createObject);
         Future<?>[] futures = new Future[getThreadSize];
 
         for (int i = 0; i < getThreadSize; i++) {
             futures[i] = executor.submit(() -> {
                 long startTime = System.currentTimeMillis();
                 for (; j.get() < size; j.getAndIncrement()) {
-//                    try {
-//                        queue.add(lanes.get());
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
+                    try {
+                        queue.add(lanes.get());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 
                 }
                 long endTime = System.currentTimeMillis();
@@ -66,53 +65,13 @@ public class ObjectLaneTest {
                 throw e;
             }
         }
+
+        System.out.printf("size: %d, create size: %d%n", size, objectSize);
         try {
             submit.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
 
         }
-        System.out.printf("size: %d, create size: %d%n", size, objectSize);
-
-        Assert.assertEquals(lanes.size(), objectSize);
-        ObjectLane.Node<PoolTestObject> next;
-        ObjectLane.Node<PoolTestObject> head = lanes.head;
-        List<String> nextSet = new ArrayList<>(4000000);
-        while ((next = head.next) != null && next != lanes.tail) {
-            String s = next.toString();
-            if (!nextSet.contains(s)) {
-                nextSet.add(s);
-            } else {
-                System.out.println("next: " + s);
-            }
-            head.next = head.next.next;
-        }
-        Assert.assertEquals(nextSet.size(), lanes.size());
-        Assert.assertEquals(objectSize, nextSet.size());
-
-        ObjectLane.Node<PoolTestObject> prev;
-        ObjectLane.Node<PoolTestObject> tail = lanes.tail;
-        List<String> prevSet = new ArrayList<>(4000000);
-        while ((prev = tail.prev) != null && prev != lanes.head) {
-            String s = prev.toString();
-            if (!prevSet.contains(s)) {
-                prevSet.add(s);
-            } else {
-                System.out.println("prev: " + s);
-            }
-            tail.prev = tail.prev.prev;
-        }
-        Assert.assertEquals(prevSet.size(), lanes.size());
-        Assert.assertEquals(objectSize, prevSet.size());
-
-        Object[] nextObject = nextSet.toArray();
-        Object[] prevObject = prevSet.toArray();
-
-
-        Assert.assertEquals(nextObject.length, prevObject.length);
-        for (int i = 0; i < prevSet.size(); i++) {
-            Assert.assertEquals(nextObject[i], prevObject[prevSet.size() - (1 + i)]);
-        }
-        System.out.printf("size: %d, create size: %d%n", size, objectSize);
     }
 
 
