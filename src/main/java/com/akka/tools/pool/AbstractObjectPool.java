@@ -5,6 +5,10 @@ public abstract class AbstractObjectPool<O> implements ObjectPool<O>{
 
     protected ObjectFactory<O> objectFactory;
 
+    public AbstractObjectPool(ObjectFactory<O> objectFactory) {
+        this.objectFactory = objectFactory;
+    }
+
     protected int width;
 
     protected int computeLane() {

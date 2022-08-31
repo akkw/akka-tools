@@ -27,40 +27,40 @@ public class PoolTest {
 
         pool.borrowObject();
 
-//        Future<Long> submit = executor.submit(new Callable<Long>() {
-//            @Override
-//            public Long call() throws Exception {
-//                long startTime = 0, endTime = 0;
-//
-//                try {
-//                    startTime = System.currentTimeMillis();
-//                    for (long i = 0; i < SIZE; i++) {
-//                        Event<String> event = pool.borrowObject();
-//                        if (event == null) {
-//                            System.out.println("event is null");
-//                        } else {
-//                            queue.add(event);
-//                        }
-//
-//                    }
-//                    endTime = System.currentTimeMillis();
-//
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//                return endTime - startTime;
-//            }
-//        });
-//        executor.execute(() -> {
-//            try {
-//                for (; ; ) {
-//                    pool.returnObject(queue.poll(10, TimeUnit.MILLISECONDS));
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        System.out.println(submit.get());
+        Future<Long> submit = executor.submit(new Callable<Long>() {
+            @Override
+            public Long call() throws Exception {
+                long startTime = 0, endTime = 0;
+
+                try {
+                    startTime = System.currentTimeMillis();
+                    for (long i = 0; i < SIZE; i++) {
+                        Event<String> event = pool.borrowObject();
+                        if (event == null) {
+                            System.out.println("event is null");
+                        } else {
+                            queue.add(event);
+                        }
+
+                    }
+                    endTime = System.currentTimeMillis();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return endTime - startTime;
+            }
+        });
+        executor.execute(() -> {
+            try {
+                for (; ; ) {
+                    pool.returnObject(queue.poll(10, TimeUnit.MILLISECONDS));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        System.out.println(submit.get());
     }
 
 

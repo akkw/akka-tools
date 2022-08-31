@@ -11,7 +11,8 @@ public class GeneralObjectPool<O> extends AbstractObjectPool<O> implements Objec
 
 
     @SuppressWarnings(value = {"unchecked"})
-    public GeneralObjectPool(int laneWidth) {
+    public GeneralObjectPool(int laneWidth,ObjectFactory<O> objectFactory) {
+        super(objectFactory);
         this.lanes = (ObjectLane<O>[]) new ObjectLane[laneWidth];
     }
 
