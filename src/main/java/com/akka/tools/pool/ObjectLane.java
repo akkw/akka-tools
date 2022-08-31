@@ -39,6 +39,9 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
         h = first.next.prev;
         h.next = first.next;
 
+        first.next = first;
+        first.prev = first;
+
         return first.o;
     }
 
