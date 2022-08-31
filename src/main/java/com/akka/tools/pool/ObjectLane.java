@@ -1,9 +1,5 @@
 package com.akka.tools.pool;
 
-import com.akka.tools.atomic.PaddedAtomicInteger;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ObjectLane<O> extends AbstractObjectPool<O> {
@@ -29,15 +25,14 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
             if (head.next == tail) {
                  return objectFactory.create();
             }
-            return unlinkHead();
+            return dequeue();
         } finally {
             getLock.unlock();
         }
     }
 
 
-    private O unlinkHead() {
-
+    private O dequeue() {
         Node<O> h = head;
         Node<O> first = h.next;
 
@@ -55,13 +50,13 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
 
             Node<O> node = new Node<>(o);
 
-            lindTail(node);
+            enqueue(node);
         } finally {
             putLock.unlock();
         }
     }
 
-    private void lindTail(Node<O> node) {
+    private void enqueue(Node<O> node) {
         final Node<O> t = this.tail;
         t.o = node.o;
         t.next = node;
