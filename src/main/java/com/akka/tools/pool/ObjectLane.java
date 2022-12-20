@@ -1,32 +1,20 @@
 package com.akka.tools.pool;
 
-import com.akka.tools.atomic.PaddedAtomicInteger;
-
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ObjectLane<O> extends AbstractObjectPool<O> {
-
-
-    private final int PROBE_STEP = 1 << 16;
-
-    private final int SPIN = 3 * PROBE_STEP;
-
     volatile Node<O> head;
 
 
     volatile Node<O> tail;
 
 
-    private final ReentrantLock getLock = new ReentrantLock();
+    private final ReentrantLock takeLock = new ReentrantLock();
 
 
     private final ReentrantLock putLock = new ReentrantLock();
-
-
-    private AtomicInteger count = new PaddedAtomicInteger();
-
 
 
 
@@ -39,71 +27,77 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
     }
 
     @Override
-    public O get() throws InterruptedException {
-        getLock.lockInterruptibly();
+    public Node<O> get() throws InterruptedException {
+        takeLock.lockInterruptibly();
         try {
-            int c = count.get();
-            if (c == 0) {
-                for (int i = 0; i < SPIN; i++) {
-                    c = count.get();
-                    if (c != 0) {
-                        break;
-                    }
-                }
-                if (c == 0) {
-                    return objectFactory.create();
+            if (isEmpty()) {
+                Thread.yield();
+                if (isEmpty()) {
+                    return new Node<>(objectFactory.create());
                 }
             }
-            O o = dequeue();
-
-            count.getAndDecrement();
-            return o;
+            return dequeue();
         } finally {
-            getLock.unlock();
+            takeLock.unlock();
         }
     }
 
 
     @Override
-    public void put(O o) throws InterruptedException {
+    public void put(Node<O> o) throws InterruptedException {
         putLock.lockInterruptibly();
         try {
-            Node<O> node = new Node<>(o);
-
-            enqueue(node);
-            count.getAndIncrement();
+            enqueue(o);
         } finally {
             putLock.unlock();
         }
     }
 
-    private O dequeue() {
+    private boolean isEmpty() throws InterruptedException {
+        takeLock.lockInterruptibly();
+        try {
+            return head.next == tail;
+        } finally {
+            takeLock.unlock();
+        }
+    }
+
+    private Node<O> dequeue() throws InterruptedException {
         Node<O> h = head;
         Node<O> first = h.next;
-
-        first.next.prev = h;
-        h.next = first.next;
-
-        first.next = first;
-        first.prev = first;
-
-        return first.o;
+        Node<O> next = first.next;
+        if (next == null) {
+            System.out.println("next null, first"+ first +"" + (first == head));
+        }
+        if (first.next == tail) {
+            putLock.lockInterruptibly();
+            try {
+                next.prev = h;
+                h.next = next;
+            } finally {
+                putLock.unlock();
+            }
+        } else {
+            next.prev = h;
+            h.next = next;
+        }
+        first.next = null;
+        first.prev = null;
+        return first;
     }
 
 
     private void enqueue(Node<O> node) {
         final Node<O> t = this.tail;
-        t.o = node.o;
-        t.next = node;
-        node.prev = t;
-        node.o = null;
-        tail = node;
+        Node<O> prev = t.prev;
+        node.next = t;
+        t.prev = node;
+
+        node.prev = prev;
+        prev.next = node;
     }
 
 
-    public int size() {
-        return count.get();
-    }
 
     static class Node<O> {
         volatile O o;

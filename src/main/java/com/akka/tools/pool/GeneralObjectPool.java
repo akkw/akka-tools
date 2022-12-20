@@ -1,7 +1,5 @@
 package com.akka.tools.pool;
 
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class GeneralObjectPool<O> extends AbstractObjectPool<O> implements ObjectPool<O> {
 
@@ -23,15 +21,13 @@ public class GeneralObjectPool<O> extends AbstractObjectPool<O> implements Objec
     }
 
     @Override
-    public O get() throws InterruptedException {
-        final long l = System.nanoTime();
+    public ObjectLane.Node<O> get() throws InterruptedException {
         int laneId = computeLane();
-        System.out.println(System.nanoTime() - l);
         return lanes[laneId].get();
     }
 
     @Override
-    public void put(O o) throws InterruptedException {
+    public void put(ObjectLane.Node<O> o) throws InterruptedException {
         int laneId = computeLane();
         lanes[laneId].put(o);
     }

@@ -21,7 +21,7 @@ public class ObjectLaneTest {
 
     ThreadPoolExecutor executor = new ThreadPoolExecutor(getThreadSize + putThreadSize, getThreadSize + putThreadSize, 0,
             TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(1));
-    LinkedBlockingQueue<PoolTestObject> queue = new LinkedBlockingQueue<>();
+    LinkedBlockingQueue<ObjectLane.Node<PoolTestObject>> queue = new LinkedBlockingQueue<>();
 
 
     @Test
@@ -33,12 +33,6 @@ public class ObjectLaneTest {
             futures[i] = executor.submit(() -> {
                 long startTime = System.currentTimeMillis();
                 for (; j.get() < size; j.getAndIncrement()) {
-//                    try {
-//                        queue.add(lanes.get());
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-
                 }
                 long endTime = System.currentTimeMillis();
                 return endTime - startTime;
@@ -47,7 +41,7 @@ public class ObjectLaneTest {
 
         Future<Object> submit = executor.submit(() -> {
             for (; ; ) {
-                PoolTestObject poll = null;
+                ObjectLane.Node<PoolTestObject> poll = null;
                 try {
                     poll = queue.take();
                 } catch (Exception e) {
@@ -73,7 +67,6 @@ public class ObjectLaneTest {
         }
         System.out.printf("size: %d, create size: %d%n", size, objectSize);
 
-        Assert.assertEquals(lanes.size(), objectSize);
         ObjectLane.Node<PoolTestObject> next;
         ObjectLane.Node<PoolTestObject> head = lanes.head;
         List<String> nextSet = new ArrayList<>(4000000);
@@ -86,7 +79,6 @@ public class ObjectLaneTest {
             }
             head.next = head.next.next;
         }
-        Assert.assertEquals(nextSet.size(), lanes.size());
         Assert.assertEquals(objectSize, nextSet.size());
 
         ObjectLane.Node<PoolTestObject> prev;
@@ -101,7 +93,6 @@ public class ObjectLaneTest {
             }
             tail.prev = tail.prev.prev;
         }
-        Assert.assertEquals(prevSet.size(), lanes.size());
         Assert.assertEquals(objectSize, prevSet.size());
 
         Object[] nextObject = nextSet.toArray();
@@ -115,10 +106,34 @@ public class ObjectLaneTest {
         System.out.printf("size: %d, create size: %d%n", size, objectSize);
     }
 
+    @Test
+    public void objectLaneTest () throws InterruptedException {
+        ObjectLane<Integer> lane = new ObjectLane<>(this::createInt);
+        ObjectLane.Node<Integer> node = lane.get();
+        ObjectLane.Node<Integer> node1 = lane.get();
+        ObjectLane.Node<Integer> node2 = lane.get();
+        lane.put(node);
+        lane.put(node1);
+        lane.put(node2);
+
+        node = lane.get();
+        node1 = lane.get();
+        node2 = lane.get();
+
+        lane.put(node);
+        lane.put(node1);
+        lane.put(node2);
+    }
+
 
     private synchronized PoolTestObject createObject() {
 //        System.out.println(1);
         return new PoolTestObject(objectSize++);
+    }
+    int i;
+    private synchronized Integer createInt() {
+//        System.out.println(1);
+        return i++;
     }
 
 }

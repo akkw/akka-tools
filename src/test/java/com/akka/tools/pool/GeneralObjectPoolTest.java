@@ -11,18 +11,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class GeneralObjectPoolTest {
 
-    long size = (long) Math.pow(10, 9);
+    long size = (long) Math.pow(10, 8);
     AtomicLong j = new PaddedAtomicLong();
     volatile int objectSize = 0;
-    int getThreadSize = 1 << 2;
+    int getThreadSize = 1;
     int putThreadSize = 1;
 
 
     ThreadPoolExecutor executor = new ThreadPoolExecutor(getThreadSize + putThreadSize, getThreadSize + putThreadSize, 0,
             TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(1));
-    LinkedBlockingQueue<PoolTestObject> queue = new LinkedBlockingQueue<>();
-
-    ThreadLocalRandom random = ThreadLocalRandom.current();
+    LinkedBlockingQueue<ObjectLane.Node<PoolTestObject>> queue = new LinkedBlockingQueue<>();
     @Test
     public void performanceTest() throws ExecutionException, InterruptedException, TimeoutException {
         GeneralObjectPool<PoolTestObject> lanes = new GeneralObjectPool<>(5, this::createObject);
@@ -33,7 +31,8 @@ public class GeneralObjectPoolTest {
                 long startTime = System.currentTimeMillis();
                 for (; j.get() < size; j.getAndIncrement()) {
                     try {
-                        queue.add(lanes.get());
+                        ObjectLane.Node<PoolTestObject> poolTestObjectNode = lanes.get();
+                        queue.add(poolTestObjectNode);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -46,7 +45,7 @@ public class GeneralObjectPoolTest {
 
         Future<Object> submit = executor.submit(() -> {
             for (; ; ) {
-                PoolTestObject poll = null;
+                ObjectLane.Node<PoolTestObject> poll = null;
                 try {
                     poll = queue.take();
                 } catch (Exception e) {
@@ -60,13 +59,13 @@ public class GeneralObjectPoolTest {
 
         for (int i = 0; i < getThreadSize; i++) {
             try {
-                System.out.println(futures[i].get());
+                System.out.println("time: "+futures[i].get());
             } catch (Exception e) {
                 throw e;
             }
         }
 
-        System.out.printf("size: %d, create size: %d%n", size, objectSize);
+        System.out.printf("size: %d, create size: %d, ratio: %f", size, objectSize, ((double)objectSize / size));
         try {
             submit.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -76,8 +75,7 @@ public class GeneralObjectPoolTest {
 
 
     private synchronized PoolTestObject createObject() {
-//        System.out.println(1);
-        return new PoolTestObject(objectSize++);
+        return  new PoolTestObject(objectSize++);
     }
 
 }

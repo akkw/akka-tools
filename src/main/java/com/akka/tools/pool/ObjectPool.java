@@ -2,8 +2,8 @@ package com.akka.tools.pool;
 
 public interface ObjectPool<O> {
 
-    O get() throws InterruptedException;
+    ObjectLane.Node<O> get() throws InterruptedException;
 
 
-    void put(O o) throws InterruptedException;
+    void put(ObjectLane.Node<O> o) throws InterruptedException;
 }
