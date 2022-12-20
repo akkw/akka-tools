@@ -1,16 +1,11 @@
 package com.akka.tools.pool;
 
 import com.akka.tools.atomic.PaddedAtomicLong;
-import org.junit.Assert;
-import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class GeneralObjectPoolTest {
-
+public class PoolTest {
     long size = (long) Math.pow(10, 8);
     AtomicLong j = new PaddedAtomicLong();
     volatile int objectSize = 0;
@@ -21,9 +16,13 @@ public class GeneralObjectPoolTest {
     ThreadPoolExecutor executor = new ThreadPoolExecutor(getThreadSize + putThreadSize, getThreadSize + putThreadSize, 0,
             TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(1));
     LinkedBlockingQueue<ObjectLane.Node<PoolTestObject>> queue = new LinkedBlockingQueue<>();
-    @Test
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
+        PoolTest test = new PoolTest();
+        test.performanceTest();
+    }
     public void performanceTest() throws ExecutionException, InterruptedException, TimeoutException {
-        GeneralObjectPool<PoolTestObject> lanes = new GeneralObjectPool<>(5, this::createObject);
+        GeneralObjectPool<PoolTestObject> lanes = new GeneralObjectPool<>(1, this::createObject);
         Future<?>[] futures = new Future[getThreadSize];
 
         for (int i = 0; i < getThreadSize; i++) {
@@ -78,7 +77,7 @@ public class GeneralObjectPoolTest {
 
 
     private synchronized PoolTestObject createObject() {
+        System.out.println("createObject: "+ objectSize);
         return  new PoolTestObject(objectSize++);
     }
-
 }

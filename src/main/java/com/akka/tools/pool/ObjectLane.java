@@ -33,6 +33,7 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
             if (isEmpty()) {
                 Thread.yield();
                 if (isEmpty()) {
+                    System.out.println("isEmpty");
                     return new Node<>(objectFactory.create());
                 }
             }
@@ -63,38 +64,13 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
     }
 
     private Node<O> dequeue() throws InterruptedException {
-        Node<O> h = head;
-        Node<O> first = h.next;
-        Node<O> next = first.next;
-        if (next == null) {
-            System.out.println("next null, first"+ first +"" + (first == head));
-        }
-        if (first.next == tail) {
-            putLock.lockInterruptibly();
-            try {
-                next.prev = h;
-                h.next = next;
-            } finally {
-                putLock.unlock();
-            }
-        } else {
-            next.prev = h;
-            h.next = next;
-        }
-        first.next = null;
-        first.prev = null;
-        return first;
+
+
     }
 
 
     private void enqueue(Node<O> node) {
-        final Node<O> t = this.tail;
-        Node<O> prev = t.prev;
-        node.next = t;
-        t.prev = node;
 
-        node.prev = prev;
-        prev.next = node;
     }
 
 
