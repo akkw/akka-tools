@@ -5,7 +5,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ObjectLane<O> extends AbstractObjectPool<O> {
-    volatile Node<O> head;
+    public volatile Node<O> head;
 
 
     volatile Node<O> tail;
@@ -17,24 +17,19 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
     private final ReentrantLock putLock = new ReentrantLock();
 
 
-
     public ObjectLane(ObjectFactory<O> objectFactory) {
         super(objectFactory);
-        head = new Node<>();
-        tail = new Node<>();
-        head.next = tail;
-        tail.prev = head;
+        head = tail = new Node<>();
     }
 
     @Override
-    public Node<O> get() throws InterruptedException {
+    public O get() throws InterruptedException {
         takeLock.lockInterruptibly();
         try {
             if (isEmpty()) {
                 Thread.yield();
                 if (isEmpty()) {
-                    System.out.println("isEmpty");
-                    return new Node<>(objectFactory.create());
+                    return objectFactory.create();
                 }
             }
             return dequeue();
@@ -45,45 +40,45 @@ public class ObjectLane<O> extends AbstractObjectPool<O> {
 
 
     @Override
-    public void put(Node<O> o) throws InterruptedException {
+    public void put(O o) throws InterruptedException {
         putLock.lockInterruptibly();
         try {
-            enqueue(o);
+            enqueue(new Node<>(o));
         } finally {
             putLock.unlock();
         }
     }
 
-    private boolean isEmpty() throws InterruptedException {
-        takeLock.lockInterruptibly();
-        try {
-            return head.next == tail;
-        } finally {
-            takeLock.unlock();
-        }
+    private boolean isEmpty() {
+        return head == tail;
     }
 
-    private Node<O> dequeue() throws InterruptedException {
+    private O dequeue() {
+        Node<O> h = head;
+        Node<O> first = h.next;
 
+        head = first;
+        O o = first.o;
+        first.o = null;
 
+        h.next = h;
+        return o;
     }
 
 
     private void enqueue(Node<O> node) {
-
+        tail.next = node;
+        tail = node;
     }
 
 
-
     static class Node<O> {
-        volatile O o;
-        volatile Node<O> next;
-        volatile Node<O> prev;
+        O o;
+        Node<O> next;
 
         public Node(O o, Node<O> next, Node<O> prev) {
             this.o = o;
             this.next = next;
-            this.prev = prev;
         }
 
         public Node(O o) {

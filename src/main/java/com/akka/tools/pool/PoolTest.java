@@ -9,20 +9,29 @@ public class PoolTest {
     long size = (long) Math.pow(10, 8);
     AtomicLong j = new PaddedAtomicLong();
     volatile int objectSize = 0;
-    int getThreadSize = 1;
+    int getThreadSize = 4;
     int putThreadSize = 1;
 
 
     ThreadPoolExecutor executor = new ThreadPoolExecutor(getThreadSize + putThreadSize, getThreadSize + putThreadSize, 0,
             TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(1));
-    LinkedBlockingQueue<ObjectLane.Node<PoolTestObject>> queue = new LinkedBlockingQueue<>();
-
+    LinkedBlockingQueue<PoolTestObject> queue = new LinkedBlockingQueue<>();
+    GeneralObjectPool<PoolTestObject> lanes = new GeneralObjectPool<>(4, this::createObject);
     public static void main(String[] args) throws ExecutionException, InterruptedException, TimeoutException {
         PoolTest test = new PoolTest();
         test.performanceTest();
+        int i = 0;
+        ObjectLane.Node<PoolTestObject> head = test.lanes.lanes[0].head;
+        ObjectLane.Node<PoolTestObject> next = head.next;
+        while (next != null) {
+            next = next.next;
+            i++;
+        }
+        System.out.println("iiii" + i);
+        test.executor.shutdownNow();
     }
     public void performanceTest() throws ExecutionException, InterruptedException, TimeoutException {
-        GeneralObjectPool<PoolTestObject> lanes = new GeneralObjectPool<>(1, this::createObject);
+
         Future<?>[] futures = new Future[getThreadSize];
 
         for (int i = 0; i < getThreadSize; i++) {
@@ -33,7 +42,7 @@ public class PoolTest {
                         if (j.get() % (long) Math.pow(10, 7) == 0) {
                             System.out.println(j.get());
                         }
-                        ObjectLane.Node<PoolTestObject> poolTestObjectNode = lanes.get();
+                        PoolTestObject poolTestObjectNode = lanes.get();
                         queue.add(poolTestObjectNode);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -47,7 +56,7 @@ public class PoolTest {
 
         Future<Object> submit = executor.submit(() -> {
             for (; ; ) {
-                ObjectLane.Node<PoolTestObject> poll = null;
+                PoolTestObject poll = null;
                 try {
                     poll = queue.take();
                 } catch (Exception e) {
@@ -67,7 +76,7 @@ public class PoolTest {
             }
         }
 
-        System.out.printf("size: %d, create size: %d, ratio: %f", size, objectSize, ((double)objectSize / size));
+        System.out.printf("size: %d, create size: %d, ratio: %f\n", size, objectSize, ((double)objectSize / size));
         try {
             submit.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

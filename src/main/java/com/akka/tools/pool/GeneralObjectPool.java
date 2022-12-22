@@ -4,7 +4,7 @@ package com.akka.tools.pool;
 public class GeneralObjectPool<O> extends AbstractObjectPool<O> implements ObjectPool<O> {
 
 
-    private final ObjectLane<O>[] lanes;
+    public final ObjectLane<O>[] lanes;
 
 
     @SuppressWarnings(value = {"unchecked"})
@@ -21,13 +21,13 @@ public class GeneralObjectPool<O> extends AbstractObjectPool<O> implements Objec
     }
 
     @Override
-    public ObjectLane.Node<O> get() throws InterruptedException {
+    public O get() throws InterruptedException {
         int laneId = computeLane();
         return lanes[laneId].get();
     }
 
     @Override
-    public void put(ObjectLane.Node<O> o) throws InterruptedException {
+    public void put(O o) throws InterruptedException {
         int laneId = computeLane();
         lanes[laneId].put(o);
     }
